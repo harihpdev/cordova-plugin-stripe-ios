@@ -1,0 +1,17 @@
+{
+  "name": "cordova-plugin-stripe-wrapper",
+  "version": "0.0.1",
+  "description": "",
+  "cordova": {
+    "id": "cordova-plugin-stripe-wrapper",
+    "platforms": [
+      "ios"
+    ]
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-ios"
+  ],
+  "author": "hari",
+  "license": "ISC"
+}

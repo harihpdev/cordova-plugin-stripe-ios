@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plugin id="coupocket-stripe-card-plugin" version="0.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+    <name>Cordova Stripe Plugin</name>
+    <js-module name="Stripe" src="www/Stripe.js">
+        <clobbers target="Stripe" />
+    </js-module>
+    <platform name="ios">
+        <config-file parent="/*" target="config.xml">
+            <feature name="StripePlugin">
+                <param name="ios-package" value="StripePlugin" />
+            </feature>
+        </config-file>
+        
+        <source-file src="src/ios/StripePlugin.swift" />
+        <source-file src="src/ios/PaymentViewController.swift" />
+
+        <dependency id="cordova-plugin-add-swift-support" version="2.0.2"/>
+        <podspec>
+
+            <pods use-frameworks="true">
+                <pod name="Stripe" />
+                <pod name="FittedSheets" />
+            </pods>
+        </podspec>
+    </platform>
+</plugin>
