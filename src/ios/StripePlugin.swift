@@ -8,16 +8,45 @@
 import Stripe
 import UIKit
 import FittedSheets
+import SwiftUI
+
+enum PaymentStatus {
+    case INITILIZED
+    case SUCCESS
+    case CANCELED
+    case FAILED
+    case INVALID_PARAMS
+    case INTENT_FETCH_IN_PROGRESS
+    case INTENT_FETCH_FAILED
+    
+    var desc: String {
+        switch self {
+        case .SUCCESS:
+            return "SUCCESS"
+        case .INITILIZED:
+            return "INITILIZED"
+        case .CANCELED:
+            return "CANCELED"
+        case .FAILED:
+            return "FAILED"
+        case .INVALID_PARAMS:
+            return "INVALID_PARAMS"
+        case .INTENT_FETCH_IN_PROGRESS:
+            return "INTENT_FETCH_IN_PROGRESS"
+        case .INTENT_FETCH_FAILED:
+            return "INTENT_FETCH_FAILED"
+        }
+    }
+}
 
 @objc(StripePlugin) class StripePlugin: CDVPlugin {
 
     @objc (showCardPaymentInterface:)
     func showCardPaymentInterface(command: CDVInvokedUrlCommand) {
-        let pluginResult = CDVPluginResult (
+        var pluginResult = CDVPluginResult (
             status: CDVCommandStatus_ERROR,
-            messageAs: "Invalid Params !!!"
+            messageAs: PaymentStatus.INVALID_PARAMS.desc
         );
-
 
         let publicKey:String? = command.arguments[0] as? String ?? nil
         let setupIntentUrl:String? = command.arguments[1] as? String ?? nil
@@ -42,7 +71,30 @@ import FittedSheets
             controller: paymentViewController,
             sizes: [.fixed(200)]
         )
+        sheetController.dismissOnOverlayTap = false
+
 
         viewController.present(sheetController, animated: true, completion: nil)
+        
+        sheetController.didDismiss = { _ in
+            // This is called after the sheet is dismissed
+            let status: PaymentStatus = paymentViewController.paymentStatus
+            
+            switch status {
+            case .SUCCESS:
+                pluginResult = CDVPluginResult (
+                    status: CDVCommandStatus_OK,
+                    messageAs: status.desc
+                )
+                break
+            default:
+                pluginResult = CDVPluginResult (
+                    status: CDVCommandStatus_ERROR,
+                    messageAs: status.desc
+                )
+            }
+            
+            self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
+        }
     }
 }

@@ -15,13 +15,14 @@ class PaymentViewController: UIViewController {
     var publicKey: String?
     var setupIntentUrl: String?
     var accessToken: String?
+    var paymentStatus: PaymentStatus = PaymentStatus.INITILIZED
 
     public init(publicKey: String?, setupIntentUrl: String?, accessToken: String?) {
-
-        super.init(nibName: nil, bundle: nil)
         self.publicKey = publicKey
         self.setupIntentUrl = setupIntentUrl
         self.accessToken = accessToken
+        
+        super.init(nibName: nil, bundle: nil)
     }
     
     public required init?(coder: NSCoder) {
@@ -80,6 +81,7 @@ class PaymentViewController: UIViewController {
                 let paymentIntentClientSecret = responseData["intent"] as? String,
                 let self = self else {
                     // Error: couldn't get setup Intent
+                    self?.dismissSheet(PaymentStatus.INTENT_FETCH_FAILED)
                     return
                 }
             self.paymentIntentClientSecret = paymentIntentClientSecret
@@ -89,10 +91,13 @@ class PaymentViewController: UIViewController {
 
     @objc
     func pay() {
-        print(paymentIntentClientSecret)
-        print("HELLOE")
         guard let paymentIntentClientSecret = paymentIntentClientSecret else {
             return;
+        }
+        
+        if !cardTextField.isValid {
+            self.displayAlert(title: "Invalid Card Details !!!", message: "")
+            return
         }
         // Collect card details
         let cardParams = cardTextField.cardParams
@@ -106,19 +111,25 @@ class PaymentViewController: UIViewController {
         paymentHandler.confirmSetupIntent(paymentIntentParams, with: self) { (status, paymentIntent, error) in
             switch (status) {
             case .failed:
-                self.displayAlert(title: "Payment failed", message: error?.localizedDescription ?? "")
+                self.dismissSheet(PaymentStatus.FAILED)
                 break
             case .canceled:
-                self.displayAlert(title: "Payment canceled", message: error?.localizedDescription ?? "")
+                self.dismissSheet(PaymentStatus.CANCELED)
                 break
             case .succeeded:
-                self.displayAlert(title: "Payment succeeded", message: paymentIntent?.description ?? "")
+//                self.displayAlert(title: "Payment succeeded", message: paymentIntent?.description ?? "")
+                self.dismissSheet(PaymentStatus.SUCCESS)
                 break
             @unknown default:
                 fatalError()
                 break
             }
         }
+    }
+    
+    func dismissSheet(_ status: PaymentStatus) {
+        self.paymentStatus = status
+        self.sheetViewController?.attemptDismiss(animated: true)
     }
     
     func displayAlert(title: String, message: String) {
