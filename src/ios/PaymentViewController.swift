@@ -16,12 +16,13 @@ class PaymentViewController: UIViewController {
     var setupIntentUrl: String?
     var accessToken: String?
     var paymentStatus: PaymentStatus = PaymentStatus.INITILIZED
+    var paymentResponse: String
 
     public init(publicKey: String?, setupIntentUrl: String?, accessToken: String?) {
         self.publicKey = publicKey
         self.setupIntentUrl = setupIntentUrl
         self.accessToken = accessToken
-        
+        self.paymentResponse = ""
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -39,17 +40,18 @@ class PaymentViewController: UIViewController {
     
     lazy var payButton: UIButton = {
         let button = UIButton(type: .custom)
-        button.layer.cornerRadius = 5
-        button.backgroundColor = .systemBlue //UIColor(red: 0.0, green: 154.0, blue: 173.0, alpha: 1.0)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 22)
+        button.layer.cornerRadius = 5 //#009AAD
+        button.backgroundColor = UIColor(red: 0x00/255, green: 0x9A/255, blue: 0xAD/255, alpha: 1.0)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 18)
+        button.setTitleColor(UIColor(red: 255.0, green: 255.0, blue: 255.0, alpha: 1.0), for: .normal)
         button.setTitle("Zahlungsdaten speichernay", for: .normal)
         button.addTarget(self, action: #selector(pay), for: .touchUpInside)
         return button
     }()
 
     override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .white
+        super.viewDidLoad() // #F3F2F2
+        view.backgroundColor = UIColor(red: 0xf3/255, green: 0xf2/255, blue: 0xf2/255, alpha: 1.0)
         let stackView = UIStackView(arrangedSubviews: [cardTextField, payButton])
         stackView.axis = .vertical
         stackView.spacing = 20
@@ -117,7 +119,22 @@ class PaymentViewController: UIViewController {
                 self.dismissSheet(PaymentStatus.CANCELED)
                 break
             case .succeeded:
-//                self.displayAlert(title: "Payment succeeded", message: paymentIntent?.description ?? "")
+                let id = paymentIntent?.stripeID
+                let paymentId = paymentIntent?.paymentMethodID
+                if let id = id, let paymentId = paymentId {
+                    let resp: [String: String] =
+                    [
+                        "id" : id,
+                        "paymentId": paymentId,
+                    ]
+                    let jsonEncoder = JSONEncoder()
+                    if let jsonData = try? jsonEncoder.encode(resp) {
+                        if let jsonString = String(data: jsonData, encoding: .utf8) {
+                            self.paymentResponse = jsonString
+                        }
+                    }
+                }
+                
                 self.dismissSheet(PaymentStatus.SUCCESS)
                 break
             @unknown default:

@@ -79,12 +79,13 @@ enum PaymentStatus {
         sheetController.didDismiss = { _ in
             // This is called after the sheet is dismissed
             let status: PaymentStatus = paymentViewController.paymentStatus
+            let result: String = paymentViewController.paymentResponse
             
             switch status {
             case .SUCCESS:
                 pluginResult = CDVPluginResult (
                     status: CDVCommandStatus_OK,
-                    messageAs: status.desc
+                    messageAs: result
                 )
                 break
             default:
