@@ -1,6 +1,7 @@
 var exec = require('cordova/exec');
 
-exports.showCardPaymentInterface = function (publicKey, setupIntentUrl, accessToken, success, error) {
-    exec(success, error, 'StripePlugin', 'showCardPaymentInterface', [publicKey, setupIntentUrl, accessToken]);
+exports.showCardPaymentInterface = function (publicKey, setupIntentUrl, accessToken) {
+    return new Promise(function(resolve, reject) {
+        exec(resolve, reject, 'StripePlugin', 'showCardPaymentInterface', [publicKey, setupIntentUrl, accessToken]);
+    })
 };
-

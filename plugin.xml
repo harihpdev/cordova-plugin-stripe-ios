@@ -2,7 +2,7 @@
 <plugin id="coupocket-stripe-card-plugin" version="0.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>Cordova Stripe Plugin</name>
     <js-module name="Stripe" src="www/Stripe.js">
-        <clobbers target="Stripe" />
+        <clobbers target="window.plugin.Stripe" />
     </js-module>
     <platform name="ios">
         <config-file parent="/*" target="config.xml">
