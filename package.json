@@ -1,7 +1,7 @@
 {
   "name": "cordova-plugin-stripe-wrapper",
   "version": "0.0.1",
-  "description": "",
+  "description": "A Cordova Plugin wrapper for handling 3ds",
   "cordova": {
     "id": "cordova-plugin-stripe-wrapper",
     "platforms": [
@@ -13,5 +13,13 @@
     "cordova-ios"
   ],
   "author": "hari",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/harihpdev/cordova-plugin-stripe-ios.git"
+  },
+  "bugs": {
+    "url": "https://github.com/harihpdev/cordova-plugin-stripe-ios/issues"
+  },
+  "homepage": "https://github.com/harihpdev/cordova-plugin-stripe-ios#readme"
 }
