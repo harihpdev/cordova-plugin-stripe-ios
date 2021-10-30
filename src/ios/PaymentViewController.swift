@@ -1,6 +1,6 @@
 //
 //  PaymentViewController.swift
-//  HelloCordova
+//  stripe-ios
 //
 //  Created by Gideons Developer on 26/10/21.
 //
