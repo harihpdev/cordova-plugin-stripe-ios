@@ -75,18 +75,20 @@ class PaymentViewController: UIViewController {
         request.httpMethod = "GET"
         request.setValue(accessToken, forHTTPHeaderField: "Authorization")
         let task = URLSession.shared.dataTask(with: request, completionHandler: { [weak self] (data, response, error) in
-            
-            guard let data = data,
-                  
-                let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String : Any],
-                let responseData = json!["data"] as? [String:AnyObject],
-                let paymentIntentClientSecret = responseData["intent"] as? String,
-                let self = self else {
-                    // Error: couldn't get setup Intent
-                    self?.dismissSheet(PaymentStatus.INTENT_FETCH_FAILED)
-                    return
-                }
-            self.paymentIntentClientSecret = paymentIntentClientSecret
+            do {
+                guard let data = data,
+                    let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String : Any],
+                    let responseData = json!["data"] as? [String:AnyObject],
+                    let paymentIntentClientSecret = responseData["intent"] as? String,
+                    let self = self else {
+                        // Error: couldn't get setup Intent
+                        throw error!
+                    }
+                self.paymentIntentClientSecret = paymentIntentClientSecret
+            } catch _ {
+                self?.paymentStatus = PaymentStatus.INTENT_FETCH_FAILED
+                self?.displayAlert(title: "Payment Failed", message: "Please try after sometime.")
+            }
         })
         task.resume()
     }
