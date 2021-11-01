@@ -52,7 +52,7 @@ enum PaymentStatus {
         let setupIntentUrl:String? = command.arguments[1] as? String ?? nil
         let accessToken:String? = command.arguments[2] as? String ?? nil
         
-        guard let publicKey = publicKey, let setupIntentUrl = setupIntentUrl, let accessToken = accessToken else {
+        guard let _ = publicKey, let _ = setupIntentUrl, let _ = accessToken else {
             //Error Invalid Input params
             self.commandDelegate!.send(
                 pluginResult,
