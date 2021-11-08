@@ -69,7 +69,7 @@ enum PaymentStatus {
         
         let sheetController = SheetViewController(
             controller: paymentViewController,
-            sizes: [.fixed(200)]
+            sizes: [.fixed(250)]
         )
         sheetController.dismissOnOverlayTap = false
 

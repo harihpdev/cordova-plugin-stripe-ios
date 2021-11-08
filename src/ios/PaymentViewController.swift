@@ -8,6 +8,7 @@
 import Foundation
 import Stripe
 import UIKit
+import SwiftUI
 
 class PaymentViewController: UIViewController {
     
@@ -38,30 +39,50 @@ class PaymentViewController: UIViewController {
         return cardTextField
     }()
     
+    lazy var cardHolderTextField: CustomTextField = {
+        let textField = CustomTextField()
+        textField.backgroundColor = UIColor(red: 0xf3/255, green: 0xf2/255, blue: 0xf2/255, alpha: 1.0)
+        textField.textColor = .darkText
+        var color: UIColor = UIColor(
+            red: 99/225, green: 99/225, blue: 102/225, alpha: 1.0
+        )
+        textField.layer.borderColor = color.cgColor
+        textField.layer.borderWidth = 1.0
+        textField.layer.cornerRadius = 5.0
+        textField.attributedPlaceholder = NSAttributedString(
+            string: "Karteninhaber",
+            attributes: [NSAttributedStringKey.foregroundColor: color]
+        )
+        return textField
+    }()
+    
     lazy var payButton: UIButton = {
         let button = UIButton(type: .custom)
         button.layer.cornerRadius = 5 //#009AAD
         button.backgroundColor = UIColor(red: 0x00/255, green: 0x9A/255, blue: 0xAD/255, alpha: 1.0)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 18)
         button.setTitleColor(UIColor(red: 255.0, green: 255.0, blue: 255.0, alpha: 1.0), for: .normal)
-        button.setTitle("Zahlungsdaten speichernay", for: .normal)
+        button.setTitle("Zahlungsdaten speichern", for: .normal)
         button.addTarget(self, action: #selector(pay), for: .touchUpInside)
+        button.contentEdgeInsets = UIEdgeInsets(
+            top: 12.0, left: 0.0, bottom: 12.0, right: 0.0
+        )
         return button
     }()
 
     override func viewDidLoad() {
         super.viewDidLoad() // #F3F2F2
         view.backgroundColor = UIColor(red: 0xf3/255, green: 0xf2/255, blue: 0xf2/255, alpha: 1.0)
-        let stackView = UIStackView(arrangedSubviews: [cardTextField, payButton])
+        let stackView = UIStackView(arrangedSubviews: [cardHolderTextField, cardTextField, payButton])
         stackView.axis = .vertical
-        stackView.spacing = 20
+        stackView.spacing = 15
         stackView.translatesAutoresizingMaskIntoConstraints = false
 
         view.addSubview(stackView)
         NSLayoutConstraint.activate([
             stackView.leftAnchor.constraintEqualToSystemSpacingAfter(view.leftAnchor, multiplier: 2),
             view.rightAnchor.constraintEqualToSystemSpacingAfter(stackView.rightAnchor, multiplier: 2),
-            stackView.topAnchor.constraintEqualToSystemSpacingBelow(view.topAnchor, multiplier: 6),
+            stackView.topAnchor.constraintEqualToSystemSpacingBelow(view.topAnchor, multiplier: 4),
         ])
 
        startCheckout()
@@ -98,15 +119,22 @@ class PaymentViewController: UIViewController {
         guard let paymentIntentClientSecret = paymentIntentClientSecret else {
             return;
         }
+        let cardHolderName = cardHolderTextField.text
+        
+        guard let name = cardHolderName, name != "", name.count > 3  else {
+            self.displayAlert(title: "Bitte trage einen gültigen Wert ein", message: "")
+            return
+        }
         
         if !cardTextField.isValid {
-            self.displayAlert(title: "Invalid Card Details !!!", message: "")
+            self.displayAlert(title: "Bitte trage gültige Zahlungsdaten ein.", message: "")
             return
         }
         // Collect card details
         let cardParams = cardTextField.cardParams
-    
-        let paymentMethodParams = STPPaymentMethodParams(card: cardParams, billingDetails: nil, metadata: nil)
+        let billingDetails = STPPaymentMethodBillingDetails()
+        billingDetails.name = cardHolderName
+        let paymentMethodParams = STPPaymentMethodParams(card: cardParams, billingDetails: billingDetails, metadata: nil)
         let paymentIntentParams = STPSetupIntentConfirmParams(clientSecret: paymentIntentClientSecret)
         paymentIntentParams.paymentMethodParams = paymentMethodParams
 
@@ -123,11 +151,12 @@ class PaymentViewController: UIViewController {
             case .succeeded:
                 let id = paymentIntent?.stripeID
                 let paymentId = paymentIntent?.paymentMethodID
-                if let id = id, let paymentId = paymentId {
+                if let id = id, let paymentId = paymentId, let name = cardHolderName {
                     let resp: [String: String] =
                     [
-                        "id" : id,
+                        "id": id,
                         "paymentId": paymentId,
+                        "ownerName": name
                     ]
                     let jsonEncoder = JSONEncoder()
                     if let jsonData = try? jsonEncoder.encode(resp) {
@@ -166,5 +195,22 @@ class PaymentViewController: UIViewController {
 extension PaymentViewController: STPAuthenticationContext {
     func authenticationPresentingViewController() -> UIViewController {
         return self
+    }
+}
+
+class CustomTextField: UITextField {
+
+    let padding = UIEdgeInsets(top: 10, left: 12, bottom: 10, right: 12)
+
+    override open func textRect(forBounds bounds: CGRect) -> CGRect {
+        return UIEdgeInsetsInsetRect(bounds, padding)
+    }
+
+    override open func placeholderRect(forBounds bounds: CGRect) -> CGRect {
+        return UIEdgeInsetsInsetRect(bounds, padding)
+    }
+
+    override open func editingRect(forBounds bounds: CGRect) -> CGRect {
+        return UIEdgeInsetsInsetRect(bounds, padding)
     }
 }
